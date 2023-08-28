@@ -18,6 +18,16 @@ class Individual:
     
     def __iter__(self):
         return iter(self.genes)
+    
+    def __len__(self):
+        return len(self.genes)
+    
+    def __str__(self):
+        return f"Individual({self.genes})"
+    
+    def __repr__(self):
+        return f"Individual({self.genes})"
+    
 
 class GA(ABC):
     def __init__(self, population_size: int, 
@@ -65,7 +75,7 @@ class GA(ABC):
             children = self.produce_next_generation(parents)
             # New population will be the children & any of their parents who are superior
             population = self.combine_children_and_better_parents(parents, children)
-            self.log_evolution_history()
+            self.log_evolution_history(population)
             
         return population
             
@@ -77,7 +87,7 @@ class GA(ABC):
         children_fitness_scores = [self.get_fitness_score(c) for c in children]
         best_child_fitness_score = max(children_fitness_scores)
         
-        better_parents = filter(lambda i: self.get_fitness_score(i) > best_child_fitness_score, parents)
+        better_parents = list(filter(lambda i: self.get_fitness_score(i) > best_child_fitness_score, parents))
         new_population = children + better_parents
         return new_population
         
@@ -132,7 +142,7 @@ class GA(ABC):
 
     @abstractmethod
     def fitness_func(self, individual: Individual) -> float:
-        """Compute fitness score of a person."""
+        """Compute fitness score of an individual. The higher the better."""
         pass
     
     def plot_evolution_history(self):
