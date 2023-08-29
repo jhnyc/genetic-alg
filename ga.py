@@ -97,12 +97,9 @@ class GA(ABC):
         """A pair of parents produce their children."""
         pass
     
-    def born_child(self, individual: Individual):
-        """Determine whether a mutated child is eligible to be born."""
-        mutated_individual = self.mutate(individual)
-        if self.get_fitness_score(mutated_individual):
-            return [mutated_individual]
-        return []
+    def viable(self, individual: Individual) -> bool:
+        """Determine whether a child can be born."""
+        return self.get_fitness_score(individual) > 0
         
     def produce_next_generation(self, parents: List[Individual]):
         """All parents in the population produce the next generation children."""
@@ -116,7 +113,8 @@ class GA(ABC):
             while len(mating_queue) > 1:
                 parent1_ix, parent2_ix = mating_queue.popleft(), mating_queue.popleft()
                 children = self.crossover(parents[parent1_ix], parents[parent2_ix])
-                next_generation += children
+                viable_children = list(filter(lambda c: self.viable(c), children))
+                next_generation.extend(viable_children)
             
         return next_generation
     

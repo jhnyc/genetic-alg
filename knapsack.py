@@ -2,6 +2,7 @@ import random
 import numpy as np
 from typing import List, Union
 from ga import GA, Individual
+from operators import Crossover, Mutation
 
 
 class Knapsack(GA):
@@ -9,6 +10,7 @@ class Knapsack(GA):
         self.items = items
         self.max_cost = max_cost
         super().__init__(**kwargs)
+        
 
     def init_population(self) -> List[Individual]:
         population = []
@@ -18,26 +20,14 @@ class Knapsack(GA):
         return population
     
     def crossover(self, parent1: Individual, parent2: Individual) -> List[Individual]:
-        """A pair of parents produce their children."""
-        children = []
-        num_children = self._generate_num_children()
-
-        for _ in range(num_children):
-            pivot = random.randint(0, len(parent1)-1)
-            if random.random() > 0.5:
-                child = Individual(parent1.genes[:pivot] + parent2.genes[pivot:])
-                children += self.born_child(child)
-            else:
-                child = Individual(parent2.genes[:pivot] + parent1.genes[pivot:])
-                children += self.born_child(child)
-
+        children = Crossover.random_crossover(parent1, parent2, self._generate_num_children)
         return children
 
     def mutate(self, individual: Individual) -> Individual:
-        for ix, gene in enumerate(individual.genes):
-            if random.random() < self.mutate_rate:
-                individual.genes[ix] += random.randint(-1, 1)
-        return individual
+        mutated_individual = Mutation.discrete_mutate(individual, 
+                                                      mutation_range=(-1, 1), 
+                                                      mutate_rate=self.mutate_rate)
+        return mutated_individual
 
     def fitness_func(self, individual: Individual) -> float:
         score = sum([count*self.items[ix].score for ix,
